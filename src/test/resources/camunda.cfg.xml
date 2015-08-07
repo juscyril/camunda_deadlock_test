@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!--
+  <bean id="processEngineConfiguration" class="org.camunda.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration">
+
+	<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/camundaenginedb" />
+    <property name="jdbcDriver" value="com.mysql.jdbc.Driver" />
+    <property name="jdbcUsername" value="root" />
+    <property name="jdbcPassword" value="root" />
+ 
+	<property name="jdbcUrl" value="jdbc:h2:mem:camunda;DB_CLOSE_DELAY=1000"/>
+	<property name="jdbcDriver" value="org.h2.Driver"/>
+	<property name="jdbcUsername" value="sa"/>
+	<property name="jdbcPassword" value=""/>
+ 
+    <property name="databaseSchemaUpdate" value="true" />
+
+    <property name="jobExecutorActivate" value="false" />
+
+    <property name="history" value="full" />
+
+    <property name="customPostBPMNParseListeners">
+      <list>
+        <bean class="org.camunda.bpm.engine.impl.bpmn.parser.FoxFailedJobParseListener" />
+      </list>
+    </property>
+
+    <property name="failedJobCommandFactory" ref="foxFailedJobCommandFactory" />
+
+    <property name="processEnginePlugins">
+      <list>
+        <ref bean="connectProcessEnginePlugin" />
+        <ref bean="spinProcessEnginePlugin" />
+      </list>
+    </property>
+
+  </bean>
+ -->
+  
+   	<bean id="camundaDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/camundaenginedb" />
+		<property name="username" value="root" />
+		<property name="password" value="root" />
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="camundaDataSource" />
+	</bean>
+
+	<bean id="processEngineConfiguration" class="org.camunda.bpm.engine.spring.SpringProcessEngineConfiguration">
+		<property name="dataSource" ref="camundaDataSource" />
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="databaseSchemaUpdate" value="true" />
+		<property name="jobExecutorActivate" value="false" />
+		<property name="deploymentResources" value="classpath*:*.bpmn" />
+		<property name="history" value="full" />
+		<property name="authorizationEnabled" value="true"/>
+	    <property name="processEnginePlugins">
+	      <list>
+	        <ref bean="connectProcessEnginePlugin" />
+	        <ref bean="spinProcessEnginePlugin" />
+	      </list>
+	    </property>
+	</bean>
+ 
+	<bean id="processEngine"
+		class="org.camunda.bpm.engine.spring.container.ManagedProcessEngineFactoryBean"
+		destroy-method="destroy">
+		<property name="processEngineConfiguration" ref="processEngineConfiguration" />
+	</bean>
+
+  <!--<bean id="uuidGenerator" class="org.camunda.bpm.engine.impl.persistence.StrongUuidGenerator" />-->
+
+  <!-- engine plugin beans -->
+  <bean id="connectProcessEnginePlugin" class="org.camunda.connect.plugin.impl.ConnectProcessEnginePlugin" />
+  <bean id="spinProcessEnginePlugin" class="org.camunda.spin.plugin.impl.SpinProcessEnginePlugin" />
+
+</beans>
